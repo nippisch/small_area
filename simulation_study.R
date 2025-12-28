@@ -6,26 +6,29 @@ library(emdi)
 library(ineq)
 
 df <- 4 # number of dataframes
-R <- 100 # number of monte carlo iterations
+R <- 2 # number of monte carlo iterations
 n_d <- c(d1 = 50, d2 = 100, d3 = 250, d4 = 600) # domain sample sizes
+base_seed <- 12345
 
 # level 1: four different dataframes
 for (i in 1:df) {
   
-  # filtered dataframe just with income for column i and the domain information
-  dat_pop <- dat_inc |> 
-    select(i, 5)
-  
-  dat_var_df <- data.frame(R = rep(1:R, each = 4))
+  dat_var_df <- data.frame(R = rep(1:R, each = length(n_d)))
   
   # level 2: 100 monte carlo iterations
   for (j in 1:R) {
     
+    # filtered dataframe just with income for column i and the domain information
+    dat_pop <- dat_inc |> 
+      select(all_of(c(i, 5)))
+    
     # preparation of merged dataframe later
     names(dat_pop)[1] <- "inc"
     dat_d_sampled <- data.frame(inc = numeric(0), domain = character(0))
+    
     # level 3: sampling for four domains
     for (k in 1:length(n_d)) {
+      set.seed(base_seed + j*100 + k)
       
       # dataframe solely with domain k
       dat_d <- dat_pop |> 
@@ -76,10 +79,10 @@ for (i in 1:df) {
       } # end loop level 5
       
       # calculating squared difference
-      d_var_jack$diff_sq <- (g_jack - g_d)^2
+      d_var_jack$diff_sq <- (d_var_jack$g_jack - d_var_jack$g_d)^2
       
       # calculating jackknife variance estimator per domain
-      A <- nrow(d_j_domain) -1
+      A <- nrow(d_j_domain) - 1
       jack_d <- ((A - 1) / A) * sum(d_var_jack$diff_sq)
       
       # adding the estimator to the existing dataframe with the bootstrap estimators
@@ -98,4 +101,27 @@ for (i in 1:df) {
   assign(name_df, dat_var_df)
   
 } # end loop level 1
+
+# benchmarking: design variance
+
+for (i in 1:df) {
+  
+  name_df <- paste0("dat_var_", i)
+  
+  tmp_df <- get(name_df)
+  
+  g_mean <- tmp_df |> 
+    group_by(domain) |> 
+    summarise(mean = mean(gini))
+  
+  for (j in 1:length(n_d)) {
+    
+    g_bar <- g_mean$mean[j]
+    
+    rows <- tmp_df$domain == paste0("d", j) 
+    
+    tmp_df$sq_diff[rows] <- (tmp_df$gini[rows] - g_bar)^2
+  }
+  
+}
 
