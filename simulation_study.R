@@ -6,7 +6,7 @@ library(emdi)
 library(ineq)
 
 df <- 4 # number of dataframes
-R <- 2 # number of monte carlo iterations
+R <- 3 # number of monte carlo iterations
 n_d <- c(d1 = 50, d2 = 100, d3 = 250, d4 = 600) # domain sample sizes
 base_seed <- 12345
 
@@ -102,26 +102,108 @@ for (i in 1:df) {
   
 } # end loop level 1
 
+# saving data (for final dataset, remove "test" at the end of the file name)
+save(dat_var_1, dat_var_2, dat_var_3, dat_var_4, file = "data/simulation_data_test.RData")
+
 # benchmarking: design variance
 
+load(file = "data/simulation_data_test.RData")
+df <- 4 # number of dataframes, must match df above
+R <- 3 # number of monte carlo iterations, must match R above
+n_d <- c(d1 = 50, d2 = 100, d3 = 250, d4 = 600) # domain sample sizes, must match n_d above
+
+# level 1: iteration over dataframes
 for (i in 1:df) {
   
+  # creation of a temporary df for dataframe i
   name_df <- paste0("dat_var_", i)
-  
   tmp_df <- get(name_df)
   
+  # df for mean gini over all iterations R per domain
   g_mean <- tmp_df |> 
     group_by(domain) |> 
     summarise(mean = mean(gini))
   
+  # level 2: iteration over domains
   for (j in 1:length(n_d)) {
     
+    # extraction of mean gini per domain
     g_bar <- g_mean$mean[j]
     
+    # extraction of all rows with domain j
     rows <- tmp_df$domain == paste0("d", j) 
     
+    # calculation of squared difference for rows of domain j
     tmp_df$sq_diff[rows] <- (tmp_df$gini[rows] - g_bar)^2
-  }
+    
+  } # end loop level 2
   
+  # extraction of df's
+  name_df1 <- paste0("dat_des_", i)
+  assign(name_df1, tmp_df)
 }
+
+# creation of an empty dataframe for final overview
+dat_fin <- data.frame(df = rep(1:4, each = 4), 
+                      domain = seq(1, 4, 1))
+
+# level 1: iteration over dataframes
+for (i in 1:df) {
+  
+  # defining dataframe for dataframe i
+  name_df <- paste0("dat_des_", i)
+  tmp_df <- get(name_df)
+  
+  # level 2: iteration over domains
+  for (j in 1:length(n_d)) {
+    
+    # temporary dataset just with domain j
+    tmp_df_d <- tmp_df[tmp_df$domain == paste0("d", j), ]
+    
+    # calculation of design variance for domain j and dataframe i
+    var_mc_d <- (1 / (R - 1)) * sum(tmp_df_d$sq_diff)
+    
+    # saving variance in dataframe
+    dat_fin[dat_fin$df == i & dat_fin$domain == j, "var_mc"] <- var_mc_d
+    
+  }  # end loop level 2
+  
+} # end loop level 1
+
+# calculation of bias and RSME
+
+# level 1: iteration over df's
+for (i in 1:df) {
+  
+  name_df <- paste0("dat_var_", i)
+  tmp_df <- get(name_df)
+  
+  # level 2: iteration over domains
+  for (j in 1:length(n_d)) {
+    
+    # extraction of monte carlo design variance for df i and domain j
+    var_mc_ij <- dat_fin[dat_fin$df == i & dat_fin$domain == j, "var_mc"]
+    
+    # temporary dataframe with only domain j
+    tmp_df_d <- tmp_df[tmp_df$domain == paste0("d", j), ]
+    
+    # calculation of difference in variance and bias incl. extraction to dat_fin for bootstrap
+    tmp_df_d$diff_boot <- tmp_df_d$boot - var_mc_ij
+    dat_fin[dat_fin$df == i & dat_fin$domain == j, "bias_boot"] <- (1/R) * sum(tmp_df_d$diff_boot)
+    
+    # calculation of difference in variance and bias incl. extraction to dat_fin for jackknife
+    tmp_df_d$diff_jack <- tmp_df_d$jack - var_mc_ij
+    dat_fin[dat_fin$df == i & dat_fin$domain == j, "bias_jack"] <- (1/R) * sum(tmp_df_d$diff_jack)
+    
+    # calculation of squared difference and RSME incl. extraction to dat_fin for bootstrap
+    tmp_df_d$sq_diff_boot <- (tmp_df_d$boot - var_mc_ij) ^ 2
+    dat_fin[dat_fin$df == i & dat_fin$domain == j, "RSME_boot"] <- sqrt((1/R) * sum(tmp_df_d$sq_diff_boot))
+    
+    # calculation of squared difference and RSME incl. extraction to dat_fin for jackknife
+    tmp_df_d$sq_diff_jack <- (tmp_df_d$jack - var_mc_ij) ^ 2
+    dat_fin[dat_fin$df == i & dat_fin$domain == j, "RSME_jack"] <- sqrt((1/R) * sum(tmp_df_d$sq_diff_jack))
+    
+  } # end loop level 2
+  
+} # end loop level 1
 
