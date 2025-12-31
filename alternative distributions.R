@@ -38,7 +38,6 @@ rpareto_mean <- function(n, alpha, mean) {
   xm <- mean * (alpha - 1) / alpha
   xm * runif(n)^(-1 / alpha)
 }
-dat_inc$pareto1 <- rpareto_mean(n, alpha = 2.2, mean = 2500)
 
 for (i in seq_along(alphas)){
   dat_inc[[paste0("pareto_a", alphas[i])]] <-  rpareto_mean(n, alpha = alphas[i], mean = 2500)
