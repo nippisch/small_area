@@ -16,21 +16,20 @@ meanlog <- log(m) - 0.5 * sdlog^2
 dat_inc <- rlnorm(n, meanlog, sdlog)|> 
   data.frame()
 
-names(dat_inc)[1] <- "Lognormal"
+names(dat_inc)[1] <- "lognormal"
 
-plot_skewed <- dat_inc |> 
-  ggplot(aes(x = skewed)) +
+plot_lognormal <- dat_inc |> 
+  ggplot(aes(x = lognormal)) +
   geom_histogram()
 
 # version 6: Gamma (controlled skewness)
-shapes <- c(500,1000,1500,2000)
+shapes <- c(5,2,1,0.7,0.5)
 betas <- 2500 / shapes
 
 for (i in seq_along(shapes)) {
-  dat_inc[[paste0("Gamma", shapes[i])]] <-  rgamma(n, shape =  shapes[i], rate =
-                                                     betas[i])
+  dat_inc[[paste0("gamma", shapes[i])]] <-  rgamma(n, shape =  shapes[i], rate =
+                                                     1/betas[i])
 } 
-#Gamma Verteilung produziert aktuell nicht erwarteten Mittelwert
 
 # version 7: Pareto (tail stress test)
 alphas <- c(1.5, 2.5, 2.0)
@@ -39,15 +38,29 @@ rpareto_mean <- function(n, alpha, mean) {
   xm * runif(n)^(-1 / alpha)
 }
 
-for (i in seq_along(alphas)){
+for (i in seq_along(alphas)) {
   dat_inc[[paste0("pareto_a", alphas[i])]] <-  rpareto_mean(n, alpha = alphas[i], mean = 2500)
 } 
 
+pareto_plots <- list()
+for (i in seq_along(alphas)) {
+  pareto_plots[[paste0("plot_pareto_a", alphas[i])]] <- ggplot(dat_inc, 
+                                               aes(x = .data[[paste0("pareto_a", alphas[i])]])) +
+    geom_histogram()
+} 
+
+
 # version 8: Mixtures (body + heavy tail)
 component <- rbinom(10000, 1, 0.9)
-dat_inc$Mix <- ifelse(component == 1,
+dat_inc$mix <- ifelse(component == 1,
                      rlnorm(n, meanlog, sdlog),
                      rpareto_mean(n, alpha = 1.5, mean = 2500))
 
-# check mean incomes
+plot_mix <- dat_inc |> 
+  ggplot(aes(x = mix)) +
+  geom_histogram()
+
+# check mean, max and min incomes
 sapply(dat_inc, mean)
+sapply(dat_inc, max)
+sapply(dat_inc, min)
