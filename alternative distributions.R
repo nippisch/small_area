@@ -23,6 +23,13 @@ plot_skewed <- dat_inc |>
   geom_histogram()
 
 # version 6: Gamma (controlled skewness)
+shapes <- c(5, 2, 1, 0.7, 0.5)
+betas <- 2500 / shapes
+
+for (i in seq_along(shapes)) {
+  dat_inc[[paste0("Gamma", shapes[i])]] <-  rgamma(n, shape =  shapes[i], rate =
+                                                     betas[i])
+} 
 
 
 # version 7: Pareto (tail stress test)
