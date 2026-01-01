@@ -23,13 +23,20 @@ plot_lognormal <- dat_inc |>
   geom_histogram()
 
 # version 6: Gamma (controlled skewness)
-shapes <- c(5,2,1,0.7,0.5)
+shapes <- c(5, 2, 1, 0.7, 0.5)
 betas <- 2500 / shapes
 
 for (i in seq_along(shapes)) {
   dat_inc[[paste0("gamma", shapes[i])]] <-  rgamma(n, shape =  shapes[i], rate =
                                                      1/betas[i])
 } 
+
+gamma_plots <- list()
+for (i in seq_along(shapes)) {
+  gamma_plots[[paste0("plot_gamma", shapes[i])]] <- ggplot(dat_inc, 
+                                                               aes(x = .data[[paste0("gamma", shapes[i])]])) +
+    geom_histogram()
+}
 
 # version 7: Pareto (tail stress test)
 alphas <- c(1.5, 2.5, 2.0)
@@ -64,3 +71,25 @@ plot_mix <- dat_inc |>
 sapply(dat_inc, mean)
 sapply(dat_inc, max)
 sapply(dat_inc, min)
+
+#assign domains
+domains <- c(rep("d1", 500),
+             rep("d2", 1000),
+             rep("d3", 2500),
+             rep("d4", 6000))
+
+# randomly shuffle and assign to dataframe
+dat_inc$domain <- sample(domains)
+
+ggpubr::ggarrange(
+  plot_lognormal,
+  plot_mix
+)
+
+ggpubr::ggarrange(
+  plotlist = pareto_plots
+)
+
+ggpubr::ggarrange(
+  plotlist = gamma_plots
+)
