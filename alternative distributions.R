@@ -22,8 +22,8 @@ plot_lognormal <- dat_inc |>
   ggplot(aes(x = lognormal)) +
   geom_histogram()
 
-# version 6: Gamma (controlled skewness)
-shapes <- c(5, 2, 1, 0.7, 0.5)
+# version 6: Gamma (controlled skewness) without shapes 2 and 0.7
+shapes <- c(5, 1,  0.5)
 betas <- 2500 / shapes
 
 for (i in seq_along(shapes)) {
@@ -81,6 +81,8 @@ domains <- c(rep("d1", 500),
 # randomly shuffle and assign to dataframe
 dat_inc$domain <- sample(domains)
 
+
+# Plotting all distributions
 ggpubr::ggarrange(
   plot_lognormal,
   plot_mix
@@ -93,3 +95,11 @@ ggpubr::ggarrange(
 ggpubr::ggarrange(
   plotlist = gamma_plots
 )
+
+# select and save data
+#first four distributions
+dat_inc <- dat_inc[,c(1:4,9)]
+#remaining four distributions (rerun script)
+dat_inc <- dat_inc[,c(5:8,9)]
+
+save(dat_inc, file = "data/dataframes.RData")
