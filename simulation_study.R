@@ -8,19 +8,20 @@ library(ineq)
 df <- 4 # number of dataframes
 R <- 3 # number of monte carlo iterations
 n_d <- c(d1 = 50, d2 = 100, d3 = 250, d4 = 600) # domain sample sizes
-base_seed <- 12345
+base_seed <- 12345 # base seed to adjust later for reproducibility
 
 # level 1: four different dataframes
 for (i in 1:df) {
   
+  # creation of an empty dataframe to store monte-carlo results
   dat_var_df <- data.frame(R = rep(1:R, each = length(n_d)))
   
-  # level 2: 100 monte carlo iterations
+  # filtered dataframe just with income for column i and the domain information
+  dat_pop <- dat_inc |> 
+    select(all_of(c(i, 5)))
+  
+  # level 2: R monte carlo iterations
   for (j in 1:R) {
-    
-    # filtered dataframe just with income for column i and the domain information
-    dat_pop <- dat_inc |> 
-      select(all_of(c(i, 5)))
     
     # preparation of merged dataframe later
     names(dat_pop)[1] <- "inc"
@@ -28,6 +29,8 @@ for (i in 1:df) {
     
     # level 3: sampling for four domains
     for (k in 1:length(n_d)) {
+      
+      # adjusted seed for variation in sampling and reproducibility at the same time
       set.seed(base_seed + j*100 + k)
       
       # dataframe solely with domain k
@@ -41,8 +44,11 @@ for (i in 1:df) {
       dat_d_sampled <- rbind(dat_d_sampled, sample_d)
       
     } # end loop level 3
-    var_r <- data.frame(domain = names(n_d), boot = NA)
-    # bootstrap variance estimation using emdi
+    
+    # creation of an empty dataframe to store variance estimation results
+    var_r <- data.frame(domain = names(n_d), boot = NA, jack = NA)
+    
+    # bootstrap variance estimation using emdi and storage in var_r
     var_boot <- emdi::direct(y = "inc",
                              smp_data = dat_d_sampled,
                              smp_domains = "domain",
@@ -58,11 +64,11 @@ for (i in 1:df) {
       d_j_domain <- dat_d_sampled |> 
         filter(domain == names(n_d)[l])
       
-      # population gini per domain
-      g_d <- ineq::Gini(d_j_domain$inc)
-      
+      # extraction of earlier calculated gini per domain l
+      g_d <- var_boot$ind$Gini[l]
       var_r$gini[l] <- g_d
       
+      # preparation of empty dataframe for jackknife variance estimation
       d_var_jack <- data.frame(g_d = rep(g_d, nrow(d_j_domain)))
       
       # level 5: calculation of the jackknife variance estimator per domain
@@ -105,6 +111,11 @@ for (i in 1:df) {
 # saving data (for final dataset, remove "test" at the end of the file name)
 save(dat_var_1, dat_var_2, dat_var_3, dat_var_4, file = "data/simulation_data_test.RData")
 
+
+######### end of simulation ########################################################################################
+####################################################################################################################
+######### start of performance evaluation ##########################################################################
+
 # benchmarking: design variance
 
 load(file = "data/simulation_data_test.RData")
@@ -141,7 +152,7 @@ for (i in 1:df) {
   # extraction of df's
   name_df1 <- paste0("dat_des_", i)
   assign(name_df1, tmp_df)
-}
+} # end loop level 1
 
 # creation of an empty dataframe for final overview
 dat_fin <- data.frame(df = rep(1:4, each = 4), 
@@ -175,6 +186,7 @@ for (i in 1:df) {
 # level 1: iteration over df's
 for (i in 1:df) {
   
+  # temporary dataframe with dataframe i
   name_df <- paste0("dat_var_", i)
   tmp_df <- get(name_df)
   
