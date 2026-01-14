@@ -38,35 +38,36 @@ plot_lognormal <- dat_inc |>
   geom_histogram()
 
 
-# version 4: GB2 by Jenkins (2009)
-rGB2 <- function(n, a, b, p, q) {
-  u <- rbeta(n, shape1 = p, shape2 = q)
-  y <- b * (u / (1 - u))^(1 / a)
-  return(y)
-}
+# version 4: Dagum-distribution
 
-# Parameters from the paper (approximate)
-a <- 2.994
-b <- 227.840
-p <- 1.063
-q <- 1.015
+# install.packages("VGAM")
+library(VGAM)
+## shape parameters from Bandourian et al. (2002); Germany 1994 (b there: 94075, rescaled to match mean = 2500 of other distributions)
+a <- 4.413
+p <- 0.337
 
-dat_inc$jenkins <- rGB2(n, a, b, p, q)
+## calculating b such that E(X) = 2500 (see Kleiber (2008))
+b <- 2500 / (gamma(p + 1/a) * gamma(1 - 1/a) / gamma(p))
 
-plot_jenkins <- dat_inc |> 
-  ggplot(aes(x = jenkins)) +
+dat_inc$dagum <- rdagum(n, shape1 = a, shape2 = p, scale  = b)
+
+plot_dagum <- dat_inc |> 
+  ggplot(aes(x = dagum)) +
   geom_histogram()
 
-ggpubr::ggarrange(plot_uniform, plot_gamma, plot_lognormal, plot_jenkins, nrow = 2, ncol = 2)
+# check distributions visually
+ggpubr::ggarrange(plot_uniform, plot_gamma, plot_lognormal, plot_dagum, nrow = 2, ncol = 2)
 
+# adding domains
 domains <- c(rep("d1", 500),
              rep("d2", 1000),
              rep("d3", 2500),
              rep("d4", 6000))
 
-# randomly shuffle and assign to dataframe
+# randomly shuffle and assign to dataframe and check
 dat_inc$domain <- sample(domains)
-
-save(dat_inc, file = "data/dataframes.RData")
+table(dat_inc$domain)
 
 summary(dat_inc)
+
+save(dat_inc, file = "data/dataframes.RData")
