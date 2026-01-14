@@ -69,7 +69,7 @@ for (i in 1:df) {
       var_r$gini[l] <- g_d
       
       # preparation of empty dataframe for jackknife variance estimation
-      d_var_jack <- data.frame(g_d = rep(g_d, nrow(d_j_domain)))
+      d_var_jack <- data.frame(g_jack = numeric(nrow(d_j_domain)))
       
       # level 5: calculation of the jackknife variance estimator per domain
       for (m in 1:nrow(d_j_domain)) {
@@ -84,8 +84,11 @@ for (i in 1:df) {
         
       } # end loop level 5
       
+      # calculating mean of g_jack
+      g_jack_mean <- mean(d_var_jack$g_jack)
+      
       # calculating squared difference
-      d_var_jack$diff_sq <- (d_var_jack$g_jack - d_var_jack$g_d)^2
+      d_var_jack$diff_sq <- (d_var_jack$g_jack - g_jack_mean)^2
       
       # calculating jackknife variance estimator per domain
       A <- nrow(d_j_domain) - 1
