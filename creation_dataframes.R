@@ -8,9 +8,11 @@ n <- 10000 # 10000 observations in the population dataframe
 
 # version 1: uniform distribution
 dat_inc <- data.frame(row.names = 1:10000)
-for (i in 1:nrow(dat_inc)) {
-  dat_inc$uniform[i] <- pmax(i/2 + rnorm(1, 0, 5), 0)
-}
+L <- 2450
+U <- 2550
+dat_inc$uniform <- runif(n, min = L, max = U)
+
+ineq::Gini(dat_inc$uniform)
 
 plot_uniform <- dat_inc |> 
   ggplot(aes(x = uniform)) +
