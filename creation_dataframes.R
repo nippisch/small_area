@@ -6,22 +6,10 @@ library(tidyverse)
 set.seed(123)
 n <- 10000 # 10000 observations in the population dataframe
 
-# version 1: normal distribution
-
-dat_inc <- rnorm(n, 2500, 800) |> 
-  pmax(0) |> 
-  data.frame()
-
-names(dat_inc)[1] <- "normal"
-
-plot_normal <- dat_inc |> 
-  ggplot(aes(x = normal)) +
-  geom_histogram()
-
-# version 2: uniform distribution
-
+# version 1: uniform distribution
+dat_inc <- data.frame(row.names = 1:10000)
 for (i in 1:nrow(dat_inc)) {
-  dat_inc$uniform[i] <- pmax(i + rnorm(1, 0, 5), 0)
+  dat_inc$uniform[i] <- pmax(i/2 + rnorm(1, 0, 5), 0)
 }
 
 plot_uniform <- dat_inc |> 
@@ -29,12 +17,26 @@ plot_uniform <- dat_inc |>
   geom_histogram()
 
 
-# version 3: right-skewed distribution
-dat_inc$skewed <- rlnorm(n, meanlog = 5, sdlog = 1)
+# version 2: Gamma
+dat_inc$gamma <- rgamma(n, shape = 0.5, rate = 1/5000)
 
-plot_skewed <- dat_inc |> 
-  ggplot(aes(x = skewed)) +
+plot_gamma <- dat_inc |> 
+  ggplot(aes(x = gamma)) +
   geom_histogram()
+
+#Version 3: Lognormal
+m <- 2500
+v <- 800^2
+
+sdlog  <- sqrt(log(1 + v / m^2))
+meanlog <- log(m) - 0.5 * sdlog^2
+
+dat_inc$lognormal <- rlnorm(n, meanlog, sdlog)
+
+plot_lognormal <- dat_inc |> 
+  ggplot(aes(x = lognormal)) +
+  geom_histogram()
+
 
 # version 4: GB2 by Jenkins (2009)
 rGB2 <- function(n, a, b, p, q) {
@@ -55,7 +57,7 @@ plot_jenkins <- dat_inc |>
   ggplot(aes(x = jenkins)) +
   geom_histogram()
 
-ggpubr::ggarrange(plot_normal, plot_uniform, plot_skewed, plot_jenkins, nrow = 2, ncol = 2)
+ggpubr::ggarrange(plot_uniform, plot_gamma, plot_lognormal, plot_jenkins, nrow = 2, ncol = 2)
 
 domains <- c(rep("d1", 500),
              rep("d2", 1000),
@@ -67,3 +69,4 @@ dat_inc$domain <- sample(domains)
 
 save(dat_inc, file = "data/dataframes.RData")
 
+summary(dat_inc)

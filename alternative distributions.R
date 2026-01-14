@@ -22,6 +22,26 @@ plot_lognormal <- dat_inc |>
   ggplot(aes(x = lognormal)) +
   geom_histogram()
 
+## version 1: normal distribution
+
+dat_inc <- rnorm(n, 2500, 800) |> 
+  pmax(0) |> 
+  data.frame()
+
+names(dat_inc)[1] <- "normal"
+
+plot_normal <- dat_inc |> 
+  ggplot(aes(x = normal)) +
+  geom_histogram()
+
+# version 3: right-skewed distribution
+dat_inc$skewed <- rlnorm(n, meanlog = 5, sdlog = 1)
+
+plot_skewed <- dat_inc |> 
+  ggplot(aes(x = skewed)) +
+  geom_histogram()
+
+
 # version 6: Gamma (controlled skewness) without shapes 2 and 0.7
 shapes <- c(5, 1,  0.5)
 betas <- 2500 / shapes
