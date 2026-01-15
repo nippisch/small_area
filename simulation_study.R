@@ -6,7 +6,7 @@ library(emdi)
 library(ineq)
 
 df <- 4 # number of dataframes
-R <- 10000 # number of monte carlo iterations
+R <- 1000 # number of monte carlo iterations
 n_d <- c(d1 = 50, d2 = 100, d3 = 250, d4 = 600) # domain sample sizes
 base_seed <- 12345 # base seed to adjust later for reproducibility
 
