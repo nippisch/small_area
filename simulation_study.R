@@ -91,7 +91,7 @@ for (i in 1:df) {
       d_var_jack$diff_sq <- (d_var_jack$g_jack - g_jack_mean)^2
       
       # calculating jackknife variance estimator per domain
-      A <- nrow(d_j_domain) - 1
+      A <- nrow(d_j_domain) 
       jack_d <- ((A - 1) / A) * sum(d_var_jack$diff_sq)
       
       # adding the estimator to the existing dataframe with the bootstrap estimators
@@ -123,7 +123,7 @@ save(dat_var_1, dat_var_2, dat_var_3, dat_var_4, file = "data/simulation_data_te
 
 load(file = "data/simulation_data_test.RData")
 df <- 4 # number of dataframes, must match df above
-R <- 3 # number of monte carlo iterations, must match R above
+R <- 1000 # number of monte carlo iterations, must match R above
 n_d <- c(d1 = 50, d2 = 100, d3 = 250, d4 = 600) # domain sample sizes, must match n_d above
 
 # level 1: iteration over dataframes
