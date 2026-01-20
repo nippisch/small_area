@@ -1,6 +1,6 @@
 #Evaluation
 library(tidyverse)
-
+library(emdi)
 
 plot_data <- bind_rows(
   df1 = dat_var_1,
@@ -21,11 +21,68 @@ dat_fin$rel_bias_jack <- dat_fin$bias_jack / dat_fin$var_mc
 dat_fin$rel_RMSE_boot <- dat_fin$RSME_boot / dat_fin$var_mc
 dat_fin$rel_RMSE_jack <- dat_fin$RSME_jack / dat_fin$var_mc
 
+#Calculating true gini coefficients and coverage
+
+gini_uniform <- emdi::direct(y = "uniform" ,
+             smp_data = dat_inc,
+             smp_domains = "domain")
+gini_true_uniform <- data.frame(gini_true = gini_uniform$ind$Gini,
+                              domain = c("d1", "d2", "d3", "d4"))
+
+gini_gamma <- emdi::direct(y = "gamma" ,
+                             smp_data = dat_inc,
+                             smp_domains = "domain")
+gini_true_gamma <- data.frame(gini_true = gini_gamma$ind$Gini,
+                              domain = c("d1", "d2", "d3", "d4"))
+
+gini_lognormal <- emdi::direct(y = "lognormal" ,
+                             smp_data = dat_inc,
+                             smp_domains = "domain")
+gini_true_lognormal <- data.frame(gini_true = gini_lognormal$ind$Gini,
+                              domain = c("d1", "d2", "d3", "d4"))
+
+gini_dagum <- emdi::direct(y = "dagum" ,
+                             smp_data = dat_inc,
+                             smp_domains = "domain")
+
+gini_true_dagum <- data.frame(gini_true = gini_dagum$ind$Gini,
+                              domain = c("d1", "d2", "d3", "d4"))
+
+#function for coverage
+calc_coverage <- function(dat_var, gini_true, alpha = 0.05) {
+  
+  z <- qnorm(1 - alpha / 2)
+  
+  dat_var |>
+    left_join(
+      gini_true,
+      by = "domain"
+    ) |>
+    mutate(
+      # Bootstrap CI
+      l_boot = gini - z * sqrt(boot),
+      u_boot = gini + z * sqrt(boot),
+      cover_boot = gini_true >= l_boot & gini_true <= u_boot,
+      
+      # Jackknife CI
+      l_jack = gini - z * sqrt(jack),
+      u_jack = gini + z * sqrt(jack),
+      cover_jack = gini_true >= l_jack & gini_true <= u_jack
+    ) |>
+    group_by(domain) |>
+    summarise(
+      coverage_boot = mean(cover_boot),
+      coverage_jack = mean(cover_jack),
+      .groups = "drop"
+    )
+}
+#coverages for chosen distributions
+calc_coverage(dat_var_1, gini_true_uniform)
+calc_coverage(dat_var_2, gini_true_gamma)
+calc_coverage(dat_var_3, gini_true_lognormal)
+calc_coverage(dat_var_4, gini_true_dagum)
 
 #Plots
-
-#Plotting
-
 
 #plotting bias for chosen distributions and all four domain sizes
 
@@ -239,3 +296,5 @@ ggpubr::ggarrange(
   nrow = 2,
   ncol = 2
 )
+
+#plotting confidence intervals and coverage
