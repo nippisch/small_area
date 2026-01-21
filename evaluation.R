@@ -296,5 +296,3 @@ ggpubr::ggarrange(
   nrow = 2,
   ncol = 2
 )
-
-#plotting confidence intervals and coverage
