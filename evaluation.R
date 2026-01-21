@@ -2,6 +2,11 @@
 library(tidyverse)
 library(emdi)
 
+load("Workspace Simulation.RData")
+rm(d_j_domain, d_jack, d_var_jack, dat_d, dat_d_sampled, dat_pop, dat_var_df, g_mean, sample_d, tmp_df, tmp_df_d, var_boot, var_r, A, 
+   base_seed, df, g_bar, g_d, g_jack, g_jack_mean, i, j, jack_d, k, l, m, n_d, name_df, name_df1, R, rows, var_mc_d, var_mc_ij, dat_des_1, 
+   dat_des_2, dat_des_3, dat_des_4)
+
 plot_data <- bind_rows(
   df1 = dat_var_1,
   df2 = dat_var_2,
@@ -193,8 +198,9 @@ plot_rel_rmse_df1 <- pivoted_data |> filter(df == 1) |>
   ggplot(aes(x=domain, y=rel_RMSE, colour = method))+
   geom_line()+
   geom_point()+
-  theme_minimal()+
+  theme_minimal() +
   ggtitle(label = "Uniform") +
+  ylim(0, 0.7) +
   ylab("relative RMSE compared to MC-benchmark")
 
 plot_rel_rmse_df2 <- pivoted_data |> filter(df == 2) |> 
@@ -203,6 +209,7 @@ plot_rel_rmse_df2 <- pivoted_data |> filter(df == 2) |>
   geom_point()+
   theme_minimal()+
   ggtitle(label = "Gamma") +
+  ylim(0, 0.7) +
   ylab("relative RMSE compared to MC-benchmark")
 
 plot_rel_rmse_df3 <- pivoted_data |> filter(df == 3) |> 
@@ -211,6 +218,7 @@ plot_rel_rmse_df3 <- pivoted_data |> filter(df == 3) |>
   geom_point()+
   theme_minimal()+
   ggtitle(label = "Lognormal") +
+  ylim(0, 0.7) +
   ylab("relative RMSE compared to MC-benchmark")
 
 plot_rel_rmse_df4 <- pivoted_data |> filter(df == 4) |> 
@@ -219,6 +227,7 @@ plot_rel_rmse_df4 <- pivoted_data |> filter(df == 4) |>
   geom_point()+
   theme_minimal()+
   ggtitle(label = "Dagum") +
+  ylim(0, 0.7) +
   ylab("relative RMSE compared to MC-benchmark")
 
 ggpubr::ggarrange(
@@ -227,7 +236,7 @@ ggpubr::ggarrange(
   plot_rel_rmse_df3,
   plot_rel_rmse_df4,
   nrow = 2,
-  ncol = 2
+  ncol = 2, common.legend = TRUE
 )
 
 #Distribution of Variance estimates: Bootstrap
