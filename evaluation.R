@@ -147,7 +147,7 @@ plot_CI <- pivoted_data |>
   scale_fill_manual(values = c("0" = "firebrick", "1" = "#009E73")) +
   scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, by = 0.2))+
   theme(axis.title.y = element_blank())+
-  labs(title  = "CI coverage rates of the true Gini coefficient")
+  labs(title  = "CI coverage rates of the true Gini coefficient", x="Domain")
 
 ggsave(
   "Plot_CI.pdf",
