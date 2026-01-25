@@ -147,13 +147,13 @@ plot_CI <- pivoted_data |>
   scale_fill_manual(values = c("0" = "firebrick", "1" = "#009E73")) +
   scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, by = 0.2))+
   theme(axis.title.y = element_blank())+
-  labs(title  = "CI coverage rates of the true Gini coefficient", x="Domain")
+  labs(x="Domain")
 
 ggsave(
   "Plot_CI.pdf",
   plot_CI,
   width = 7,
-  height = 5
+  height = 4
 )
 #plotting bias for chosen distributions and all four domain sizes
 
@@ -296,7 +296,7 @@ ggsave(
   "relative_RMSE.pdf",
   plot_rel_rmse,
   width = 7,
-  height = 5
+  height = 4
 )
 
 
