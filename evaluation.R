@@ -153,7 +153,7 @@ ggsave(
   "Plot_CI.pdf",
   plot_CI,
   width = 7,
-  height = 4
+  height = 3
 )
 #plotting bias for chosen distributions and all four domain sizes
 
