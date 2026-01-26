@@ -145,7 +145,8 @@ plot_CI <- pivoted_data |>
   ) +
   facet_grid(rows = vars(method), cols = vars(df)) +
   scale_fill_manual(values = c("0" = "firebrick", "1" = "#009E73")) +
-  scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, by = 0.2))+
+  scale_y_continuous(breaks = seq(0.8, 1, by = 0.05)) +
+  coord_cartesian(ylim = c(0.8, 1)) +
   theme(axis.title.y = element_blank())+
   labs(x="Domain")
 
