@@ -2,7 +2,7 @@
 library(tidyverse)
 library(emdi)
 
-load("Workspace Simulation.RData")
+load("data/results_simulation.RData")
 rm(d_j_domain, d_jack, d_var_jack, dat_d, dat_d_sampled, dat_pop, dat_var_df, g_mean, sample_d, tmp_df, tmp_df_d, var_boot, var_r, A, 
    base_seed, df, g_bar, g_d, g_jack, g_jack_mean, i, j, jack_d, k, l, m, n_d, name_df, name_df1, R, rows, var_mc_d, var_mc_ij, dat_des_1, 
    dat_des_2, dat_des_3, dat_des_4)
@@ -22,9 +22,9 @@ plot_data <- bind_rows(
 dat_fin$rel_bias_boot <- dat_fin$bias_boot / dat_fin$var_mc
 dat_fin$rel_bias_jack <- dat_fin$bias_jack / dat_fin$var_mc
 
-# calculating relative RSMEs
-dat_fin$rel_RMSE_boot <- dat_fin$RSME_boot / dat_fin$var_mc
-dat_fin$rel_RMSE_jack <- dat_fin$RSME_jack / dat_fin$var_mc
+# calculating relative RMSEs
+dat_fin$rel_RMSE_boot <- dat_fin$RMSE_boot / dat_fin$var_mc
+dat_fin$rel_RMSE_jack <- dat_fin$RMSE_jack / dat_fin$var_mc
 
 #Calculating true gini coefficients and coverage
 

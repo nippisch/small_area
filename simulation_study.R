@@ -184,7 +184,7 @@ for (i in 1:df) {
   
 } # end loop level 1
 
-# calculation of bias and RSME
+# calculation of bias and RMSE
 
 # level 1: iteration over df's
 for (i in 1:df) {
@@ -210,13 +210,13 @@ for (i in 1:df) {
     tmp_df_d$diff_jack <- tmp_df_d$jack - var_mc_ij
     dat_fin[dat_fin$df == i & dat_fin$domain == j, "bias_jack"] <- (1/R) * sum(tmp_df_d$diff_jack)
     
-    # calculation of squared difference and RSME incl. extraction to dat_fin for bootstrap
+    # calculation of squared difference and RMSE incl. extraction to dat_fin for bootstrap
     tmp_df_d$sq_diff_boot <- (tmp_df_d$boot - var_mc_ij) ^ 2
-    dat_fin[dat_fin$df == i & dat_fin$domain == j, "RSME_boot"] <- sqrt((1/R) * sum(tmp_df_d$sq_diff_boot))
+    dat_fin[dat_fin$df == i & dat_fin$domain == j, "RMSE_boot"] <- sqrt((1/R) * sum(tmp_df_d$sq_diff_boot))
     
-    # calculation of squared difference and RSME incl. extraction to dat_fin for jackknife
+    # calculation of squared difference and RMSE incl. extraction to dat_fin for jackknife
     tmp_df_d$sq_diff_jack <- (tmp_df_d$jack - var_mc_ij) ^ 2
-    dat_fin[dat_fin$df == i & dat_fin$domain == j, "RSME_jack"] <- sqrt((1/R) * sum(tmp_df_d$sq_diff_jack))
+    dat_fin[dat_fin$df == i & dat_fin$domain == j, "RMSE_jack"] <- sqrt((1/R) * sum(tmp_df_d$sq_diff_jack))
     
   } # end loop level 2
   
