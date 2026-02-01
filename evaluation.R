@@ -367,3 +367,11 @@ ggpubr::ggarrange(
   nrow = 2,
   ncol = 2
 )
+
+
+dat_inc |> 
+  group_by(domain) |> 
+  summarise(G_uni = ineq::Gini(uniform),
+            G_gam = ineq::Gini(gamma),
+            G_log = ineq::Gini(lognormal),
+            G_dag = ineq::Gini(dagum))
